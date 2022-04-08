@@ -20,7 +20,7 @@ defmodule Game.HeroTest do
 
     test "register as alive", %{opts: opts} do
       {:ok, pid} = Hero.start_link(:john, opts)
-      [{^pid, _hero}] = Registry.lookup(opts[:state_registry], :alive)
+      [{^pid, _hero}] = get_alive(opts)
     end
   end
 
@@ -28,13 +28,12 @@ defmodule Game.HeroTest do
     test "remove only itself from registry of alive heroes", %{opts: opts} do
       {:ok, pid1} = Hero.start_link(:john, opts)
       {:ok, pid2} = Hero.start_link(:jane, opts)
-      assert length(Registry.lookup(opts[:state_registry], :alive)) == 2
+      assert length(get_alive(opts)) == 2
 
       GenServer.cast(pid2, :die)
       :sys.get_state(pid2)
 
-      assert length(Registry.lookup(opts[:state_registry], :alive)) == 1
-      [{pid, hero}] = Registry.lookup(opts[:state_registry], :alive)
+      [{pid, hero}] = get_alive(opts)
       assert pid == pid1
       assert hero.name == :john
     end
@@ -45,5 +44,9 @@ defmodule Game.HeroTest do
       hero = :sys.get_state(pid)
       refute hero.alive?
     end
+  end
+
+  defp get_alive(opts) do
+    Registry.lookup(opts[:state_registry], :alive)
   end
 end
