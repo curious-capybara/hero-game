@@ -27,8 +27,13 @@ defmodule Game do
     })
   end
 
-  def player_info(pid, opts \\ []) do
+  def player_info(pid) do
     GenServer.call(pid, :get)
+  end
+
+  def all_heroes do
+    Registry.lookup(Game.StateRegistry, :heroes)
+    |> Enum.map(fn {pid, _} -> GenServer.call(pid, :get) end)
   end
 
   def get_map do

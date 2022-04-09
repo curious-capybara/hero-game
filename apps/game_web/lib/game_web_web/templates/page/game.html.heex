@@ -1,12 +1,14 @@
-<h1>Hello, <%= @player.name %> (<%= inspect(@player.position) %>)</h1>
+<h1>Hello, <%= @player.name %></h1>
 
 <div class="board">
-  <%= for row <- tiles(@map, @player) do %>
+  <%= for row <- tiles(@map, @player, @heroes) do %>
     <%= for {_pos, type, label} <- row do %>
         <div class={"tile #{type}"}><%= label %></div>
     <% end %>
   <% end %>
 </div>
 
-<p><button phx-click="move_left">Left</button> <button phx-click="move_up">Up</button> <button phx-click="move_down">Down</button> <button phx-click="move_right">Right</button></p>
-<p><button phx-click="attack">Attack!</button></p>
+<%= if @player.alive? do %>
+  <p><button phx-click="move_left">Left</button> <button phx-click="move_up">Up</button> <button phx-click="move_down">Down</button> <button phx-click="move_right">Right</button></p>
+  <p><button phx-click="attack">Attack!</button></p>
+<% end %>

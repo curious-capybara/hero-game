@@ -32,6 +32,7 @@ defmodule Game.Hero do
     }
 
     Registry.register(state_registry, :alive, hero)
+    Registry.register(state_registry, :heroes, hero)
     {:ok, hero}
   end
 

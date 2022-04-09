@@ -6,7 +6,15 @@ defmodule GameWebWeb.GameLive do
     {:ok, pid} = Game.connect_player(name)
     player = Game.player_info(pid)
     map = Game.get_map()
-    {:ok, assign(socket, player: player, map: map, player_pid: pid)}
+
+    Process.send_after(self(), :refresh, 500)
+
+    socket =
+      socket
+      |> assign(map: map, player_pid: pid)
+      |> refresh_players()
+
+    {:ok, socket}
   end
 
   def render(assigns) do
@@ -14,23 +22,19 @@ defmodule GameWebWeb.GameLive do
   end
 
   def handle_event("move_right", _, socket) do
-    player = move(:right, socket)
-    {:noreply, assign(socket, :player, player)}
+    move(:right, socket)
   end
 
   def handle_event("move_left", _, socket) do
-    player = move(:left, socket)
-    {:noreply, assign(socket, :player, player)}
+    move(:left, socket)
   end
 
   def handle_event("move_up", _, socket) do
-    player = move(:up, socket)
-    {:noreply, assign(socket, :player, player)}
+    move(:up, socket)
   end
 
   def handle_event("move_down", _, socket) do
-    player = move(:down, socket)
-    {:noreply, assign(socket, :player, player)}
+    move(:down, socket)
   end
 
   def handle_event("attack", _, socket) do
@@ -39,9 +43,20 @@ defmodule GameWebWeb.GameLive do
     {:noreply, socket}
   end
 
+  def handle_info(:refresh, socket) do
+    Process.send_after(self(), :refresh, 500)
+    {:noreply, refresh_players(socket)}
+  end
+
   defp move(dir, socket) do
     pid = socket.assigns.player_pid
     GenServer.cast(pid, {:move, dir})
-    Game.player_info(pid)
+    {:noreply, refresh_players(socket)}
+  end
+
+  defp refresh_players(socket) do
+    player = Game.player_info(socket.assigns.player_pid)
+    heroes = Game.all_heroes()
+    assign(socket, heroes: heroes, player: player)
   end
 end

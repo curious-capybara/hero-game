@@ -13,47 +13,12 @@ grid-template-columns: repeat(10, 60px);
  border: 2px solid black;
 }
 
-.wall{
-  background-color:black;
-}
-
-.player{
-  background-color:green;
-}
-
-/* Alerts and form errors used by phx.new */
-.alert {
-  padding: 15px;
-  margin-bottom: 20px;
-  border: 1px solid transparent;
-  border-radius: 4px;
-}
-.alert-info {
-  color: #31708f;
-  background-color: #d9edf7;
-  border-color: #bce8f1;
-}
-.alert-warning {
-  color: #8a6d3b;
-  background-color: #fcf8e3;
-  border-color: #faebcc;
-}
-.alert-danger {
-  color: #a94442;
-  background-color: #f2dede;
-  border-color: #ebccd1;
-}
-.alert p {
-  margin-bottom: 0;
-}
-.alert:empty {
-  display: none;
-}
-.invalid-feedback {
-  color: #a94442;
-  display: block;
-  margin: -1rem 0 2rem;
-}
+.tile { text-align: center }
+.wall{ background-color:black; }
+.player{ background-color:green; font-weight: bold }
+.player-dead { background-color: darkgreen; font-weight: bold; }
+.enemy { background-color: yellow; }
+.enemy-dead { background-color: darkred; }
 
 /* LiveView specific classes for your customization */
 .phx-no-feedback.invalid-feedback,
