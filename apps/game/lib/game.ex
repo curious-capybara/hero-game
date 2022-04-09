@@ -9,7 +9,11 @@ defmodule Game do
   """
   @spec connect_player(String.t()) :: {:ok, pid()}
   def connect_player(name, opts \\ []) do
-    name = String.to_atom(name)
+    name =
+    name
+    |> maybe_generate()
+          |> String.to_atom()
+
     registry = Keyword.get(opts, :names_registry, @registry)
 
     case Registry.lookup(registry, name) do
@@ -17,6 +21,20 @@ defmodule Game do
       [] -> start_child(name, opts)
     end
   end
+
+  defp maybe_generate("") do
+    base =
+    ["Dick", "Elrond", "Janet", "Geralt"]
+    |> Enum.random()
+
+    number = :rand.uniform(1000)
+
+    connector = Enum.random(["_", "", "-", "@"])
+
+    "#{base}#{connector}#{number}"
+  end
+
+  defp maybe_generate(name), do: name
 
   defp start_child(name, opts) do
     supervisor = Keyword.get(opts, :supervisor, @players_supervisor)
