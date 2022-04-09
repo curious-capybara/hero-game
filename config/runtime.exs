@@ -25,8 +25,8 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  host = System.get_env("PHX_HOST") || "example.com"
-  port = String.to_integer(System.get_env("PORT") || "4000")
+  host = System.get_env("HOST")
+  port = String.to_integer(System.get_env("PORT") || "443")
 
   config :game_web, GameWebWeb.Endpoint,
     url: [host: host, port: 443],
@@ -38,8 +38,7 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
     ],
-    secret_key_base: secret_key_base,
-    force_ssl: [rewrite_on: [:x_forwarded_proto]]
+    secret_key_base: secret_key_base
 
   # ## Using releases
   #
