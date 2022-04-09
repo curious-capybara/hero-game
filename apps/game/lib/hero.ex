@@ -6,7 +6,8 @@ defmodule Game.Hero do
   @names_registry Game.PlayerNamesRegistry
   @state_registry Game.StateRegistry
 
-  defstruct [:name, :alive?, :names_registry, :state_registry]
+  @enforce_keys [:name, :position, :alive?]
+  defstruct [:name, :position, :alive?, :names_registry, :state_registry]
 
   def start_link(name, opts \\ []) do
     names_registry = Keyword.get(opts, :names_registry, @names_registry)
@@ -17,7 +18,14 @@ defmodule Game.Hero do
   @impl true
   def init(opts) do
     state_registry = Keyword.get(opts, :state_registry, @state_registry)
-    hero = %Hero{name: Keyword.get(opts, :name), alive?: true, state_registry: state_registry}
+
+    hero = %Hero{
+      name: Keyword.get(opts, :name),
+      position: get_spawn_position(),
+      alive?: true,
+      state_registry: state_registry
+    }
+
     Registry.register(state_registry, :alive, hero)
     {:ok, hero}
   end
@@ -30,5 +38,10 @@ defmodule Game.Hero do
 
   defp via_tuple(name, registry) do
     {:via, Registry, {registry, name}}
+  end
+
+  defp get_spawn_position do
+    Game.GameMap.get()
+    |> Game.GameMap.random_spawn_position()
   end
 end

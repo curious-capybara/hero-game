@@ -29,10 +29,10 @@ defmodule Game.GameMapTest do
     end
   end
 
-  describe "random_spawn_location/1" do
-    test "return location hero can move to", %{map: map} do
-      location = GameMap.random_spawn_location(map)
-      assert GameMap.can_move_to?(map, location)
+  describe "random_spawn_position/1" do
+    test "return position hero can move to", %{map: map} do
+      position = GameMap.random_spawn_position(map)
+      assert GameMap.can_move_to?(map, position)
     end
   end
 end

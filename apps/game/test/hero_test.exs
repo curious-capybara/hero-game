@@ -22,6 +22,12 @@ defmodule Game.HeroTest do
       {:ok, pid} = Hero.start_link(:john, opts)
       [{^pid, _hero}] = get_alive(opts)
     end
+
+    test "set position", %{opts: opts} do
+      {:ok, pid} = Hero.start_link(:john, opts)
+      hero = :sys.get_state(pid)
+      refute is_nil(hero.position)
+    end
   end
 
   describe "handle :die" do

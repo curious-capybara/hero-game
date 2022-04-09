@@ -5,7 +5,8 @@ defmodule Game.Application do
     children = [
       {DynamicSupervisor, strategy: :one_for_one, name: Game.PlayersSupervisor},
       {Registry, keys: :unique, name: Game.PlayerNamesRegistry},
-      {Registry, keys: :duplicate, name: Game.StateRegistry}
+      {Registry, keys: :duplicate, name: Game.StateRegistry},
+      {Game.GameMap, []}
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one)
