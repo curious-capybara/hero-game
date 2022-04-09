@@ -7,7 +7,7 @@ defmodule Game do
   to existing player.
   TODO: If no name given, generate one randomly.
   """
-  @spec connect_player(String.t()) :: {:ok, pid()} | {:error, :not_found}
+  @spec connect_player(String.t()) :: {:ok, pid()}
   def connect_player(name, opts \\ []) do
     name = String.to_atom(name)
     registry = Keyword.get(opts, :names_registry, @registry)
@@ -25,5 +25,13 @@ defmodule Game do
       id: Game.Hero,
       start: {Game.Hero, :start_link, [name, opts]}
     })
+  end
+
+  def player_info(pid, opts \\ []) do
+    GenServer.call(pid, :get)
+  end
+
+  def get_map do
+    Game.GameMap.get()
   end
 end

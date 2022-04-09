@@ -1,0 +1,9 @@
+<h1>Hello, <%= @player.name %> (<%= inspect(@player.position) %>)</h1>
+
+<div class="board">
+  <%= for row <- tiles(@map, @player) do %>
+        <%= for {_pos, type, label} <- row do %>
+          <div class={"tile #{type}"}><%= label %></div>
+        <% end %>
+  <% end %>
+</div>

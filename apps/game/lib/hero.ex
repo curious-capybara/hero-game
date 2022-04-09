@@ -36,6 +36,11 @@ defmodule Game.Hero do
   end
 
   @impl true
+  def handle_call(:get, _from, hero) do
+    {:reply, hero, hero}
+  end
+
+  @impl true
   def handle_cast(:die, hero) do
     Registry.unregister(hero.state_registry, :alive)
     Process.send_after(self(), :respawn, 1000 * 5)
