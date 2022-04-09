@@ -9,6 +9,8 @@ defmodule Game.Hero do
   @enforce_keys [:name, :position, :alive?]
   defstruct [:name, :position, :alive?, :names_registry, :state_registry]
 
+  @type t :: %__MODULE__{}
+
   def start_link(name, opts \\ []) do
     names_registry = Keyword.get(opts, :names_registry, @names_registry)
     process_name = via_tuple(name, names_registry)
@@ -34,6 +36,34 @@ defmodule Game.Hero do
   def handle_cast(:die, hero) do
     Registry.unregister(hero.state_registry, :alive)
     {:noreply, %Hero{hero | alive?: false}}
+  end
+
+  @impl true
+  def handle_cast({:move, direction}, hero) do
+    {:noreply, Hero.move(hero, direction)}
+  end
+
+  @doc """
+  Moves a hero in a given direction. If it's not possible to move in a given direction
+  because of map boundaries or obstacles, returns a hero with original position (not an error).
+  """
+  @spec move(Hero.t(), atom()) :: Hero.t()
+  def move(hero, direction) do
+    {x, y} = hero.position
+
+    new_position =
+      case direction do
+        :left -> {x - 1, y}
+        :right -> {x + 1, y}
+        :up -> {x, y + 1}
+        :down -> {x, y - 1}
+      end
+
+    if Game.GameMap.get() |> Game.GameMap.can_move_to?(new_position) do
+      %Hero{hero | position: new_position}
+    else
+      hero
+    end
   end
 
   defp via_tuple(name, registry) do
