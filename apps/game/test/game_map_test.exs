@@ -35,4 +35,36 @@ defmodule Game.GameMapTest do
       assert GameMap.can_move_to?(map, position)
     end
   end
+
+  describe "attack_aoe/2" do
+    test "return all adjacent fields", %{map: map} do
+      assert GameMap.attack_aoe(map, {3, 3}) == [
+               {2, 2},
+               {3, 2},
+               {4, 2},
+               {2, 3},
+               {3, 3},
+               {4, 3},
+               {2, 4},
+               {3, 4},
+               {4, 4}
+             ]
+    end
+
+    test "don't return out of bounds tiles", %{map: map} do
+      assert GameMap.attack_aoe(map, {4, 4}) == [{3, 3}, {4, 3}, {3, 4}, {4, 4}]
+    end
+
+    test "don't return wall tiles", %{map: map} do
+      assert GameMap.attack_aoe(map, {1, 2}) == [
+               {2, 1},
+               {0, 2},
+               {1, 2},
+               {2, 2},
+               {0, 3},
+               {1, 3},
+               {2, 3}
+             ]
+    end
+  end
 end

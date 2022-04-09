@@ -80,4 +80,18 @@ defmodule Game.GameMap do
       do: {x, y},
       else: random_spawn_position(map)
   end
+
+  @doc """
+  Returns all positions affected by the attack from a given position, excluding walls, including
+  the position, from which the attack originated.
+  """
+  @spec attack_aoe(GameMap.t(), position()) :: list(position())
+  def attack_aoe(map, {x, y}) do
+    [
+      {x - 1, y - 1}, {x, y - 1}, {x + 1, y - 1},
+      {x - 1, y}, {x, y}, {x + 1, y},
+      {x - 1, y + 1}, {x, y + 1}, {x + 1, y + 1}
+    ]
+    |> Enum.filter(& can_move_to?(map, &1))
+  end
 end

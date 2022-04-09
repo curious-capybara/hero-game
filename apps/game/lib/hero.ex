@@ -2,6 +2,7 @@ defmodule Game.Hero do
   use GenServer
 
   alias __MODULE__
+  alias Game.GameMap
 
   @names_registry Game.PlayerNamesRegistry
   @state_registry Game.StateRegistry
@@ -20,12 +21,14 @@ defmodule Game.Hero do
   @impl true
   def init(opts) do
     state_registry = Keyword.get(opts, :state_registry, @state_registry)
+    names_registry = Keyword.get(opts, :names_registry, @names_registry)
 
     hero = %Hero{
       name: Keyword.get(opts, :name),
       position: get_spawn_position(),
       alive?: true,
-      state_registry: state_registry
+      state_registry: state_registry,
+      names_registry: names_registry
     }
 
     Registry.register(state_registry, :alive, hero)
@@ -41,6 +44,27 @@ defmodule Game.Hero do
   @impl true
   def handle_cast({:move, direction}, hero) do
     {:noreply, Hero.move(hero, direction)}
+  end
+
+  @impl true
+  def handle_cast(:attack, hero) do
+    affected_positions = GameMap.attack_aoe(GameMap.get(), hero.position)
+
+    Registry.dispatch(hero.state_registry, :alive, fn heroes ->
+      for {pid, _} <- heroes do
+        GenServer.cast(pid, {:attack_performed, hero.name, affected_positions})
+      end
+    end)
+
+    {:noreply, hero}
+  end
+
+  @impl true
+  def handle_cast({:attack_performed, attacker_name, affected_positions}, hero) do
+    if Hero.affected_by_attack?(hero, attacker_name, affected_positions) |> IO.inspect(),
+      do: GenServer.cast(self(), :die)
+
+    {:noreply, hero}
   end
 
   @doc """
@@ -59,10 +83,21 @@ defmodule Game.Hero do
         :down -> {x, y - 1}
       end
 
-    if Game.GameMap.get() |> Game.GameMap.can_move_to?(new_position) do
-      %Hero{hero | position: new_position}
-    else
-      hero
+    if GameMap.get() |> GameMap.can_move_to?(new_position),
+      do: %Hero{hero | position: new_position},
+      else: hero
+  end
+
+  @doc """
+  Checks if the hero if affected by a current attack
+  """
+  @spec affected_by_attack?(Hero.t(), atom(), list({integer(), integer()})) :: boolean()
+  def affected_by_attack?(hero, attacker_name, affected_positions) do
+    cond do
+      not hero.alive? -> false
+      hero.name == attacker_name -> false
+      hero.position in affected_positions -> true
+      true -> false
     end
   end
 
@@ -71,7 +106,7 @@ defmodule Game.Hero do
   end
 
   defp get_spawn_position do
-    Game.GameMap.get()
-    |> Game.GameMap.random_spawn_position()
+    GameMap.get()
+    |> GameMap.random_spawn_position()
   end
 end

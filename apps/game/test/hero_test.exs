@@ -84,6 +84,46 @@ defmodule Game.HeroTest do
     end
   end
 
+  describe "affected_by_attack?/3" do
+    test "return true when hero in affected area" do
+      hero = %Hero{name: :joshua, position: {1, 1}, alive?: true}
+      assert Hero.affected_by_attack?(hero, :jane, [{0, 1}, {1, 1}, {2, 2}])
+    end
+
+    test "return false when hero outside of affected area" do
+      hero = %Hero{name: :joshua, position: {2, 3}, alive?: true}
+      refute Hero.affected_by_attack?(hero, :jane, [{0, 1}, {1, 1}, {2, 2}])
+    end
+
+    test "return false when hero is already dead" do
+      hero = %Hero{name: :joshua, position: {1, 1}, alive?: false}
+      refute Hero.affected_by_attack?(hero, :jane, [{0, 1}, {1, 1}, {2, 2}])
+    end
+
+    test "return false when hero is an attacker" do
+      hero = %Hero{name: :joshua, position: {1, 1}, alive?: true}
+      refute Hero.affected_by_attack?(hero, :joshua, [{0, 1}, {1, 1}, {2, 2}])
+    end
+  end
+
+  describe "handle :attack" do
+    setup :gen_server_deps
+
+    test "kills adjacent heroes", %{opts: opts} do
+      {:ok, pid1} = Hero.start_link(:john, opts)
+      force_position(pid1, {1, 1})
+      {:ok, pid2} = Hero.start_link(:jane, opts)
+      force_position(pid2, {0, 0})
+      {:ok, pid3} = Hero.start_link(:george, opts)
+      force_position(pid3, {1, 2})
+
+      GenServer.cast(pid1, :attack)
+      assert :sys.get_state(pid1).alive?
+      assert wait_until_dead(pid2)
+      assert wait_until_dead(pid3)
+    end
+  end
+
   defp get_alive(opts) do
     Registry.lookup(opts[:state_registry], :alive)
   end
@@ -94,5 +134,26 @@ defmodule Game.HeroTest do
     state_registry_name = UUID.uuid1() |> String.to_atom()
     {:ok, _pid} = start_supervised({Registry, keys: :duplicate, name: state_registry_name})
     {:ok, %{opts: [names_registry: names_registry_name, state_registry: state_registry_name]}}
+  end
+
+  def force_position(pid, position) do
+    :sys.replace_state(pid, fn hero -> %Hero{hero | position: position} end)
+  end
+
+  # Quite dumb helper method to wait for the hero to be dead
+  def wait_until_dead(pid, times \\ 10) do
+    Stream.unfold(times, fn attempts_left ->
+      cond do
+        attempts_left == 0 ->
+          false
+
+        :sys.get_state(pid).alive? ->
+          :timer.sleep(1)
+          {:ok, attempts_left - 1}
+
+        true ->
+          true
+      end
+    end)
   end
 end
