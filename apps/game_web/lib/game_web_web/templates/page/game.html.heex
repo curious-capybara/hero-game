@@ -2,8 +2,11 @@
 
 <div class="board">
   <%= for row <- tiles(@map, @player) do %>
-        <%= for {_pos, type, label} <- row do %>
-          <div class={"tile #{type}"}><%= label %></div>
-        <% end %>
+    <%= for {_pos, type, label} <- row do %>
+        <div class={"tile #{type}"}><%= label %></div>
+    <% end %>
   <% end %>
 </div>
+
+<p><button phx-click="move_left">Left</button> <button phx-click="move_up">Up</button> <button phx-click="move_down">Down</button> <button phx-click="move_right">Right</button></p>
+<p><button phx-click="attack">Attack!</button></p>
