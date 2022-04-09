@@ -38,6 +38,7 @@ defmodule Game.Hero do
   @impl true
   def handle_cast(:die, hero) do
     Registry.unregister(hero.state_registry, :alive)
+    Process.send_after(self(), :respawn, 1000 * 5)
     {:noreply, %Hero{hero | alive?: false}}
   end
 
@@ -61,9 +62,16 @@ defmodule Game.Hero do
 
   @impl true
   def handle_cast({:attack_performed, attacker_name, affected_positions}, hero) do
-    if Hero.affected_by_attack?(hero, attacker_name, affected_positions) |> IO.inspect(),
+    if Hero.affected_by_attack?(hero, attacker_name, affected_positions),
       do: GenServer.cast(self(), :die)
 
+    {:noreply, hero}
+  end
+
+  @impl true
+  def handle_info(:respawn, hero) do
+    hero = %Hero{hero | position: get_spawn_position(), alive?: true}
+    Registry.register(hero.state_registry, :alive, hero)
     {:noreply, hero}
   end
 

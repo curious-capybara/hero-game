@@ -124,6 +124,41 @@ defmodule Game.HeroTest do
     end
   end
 
+  describe "handle :respawn" do
+    setup :gen_server_deps
+
+    setup(%{opts: opts}) do
+      hero = %Hero{
+        name: :joshua,
+        position: {1, 1},
+        alive?: false,
+        state_registry: opts[:state_registry]
+      }
+
+      {:ok, %{hero: hero}}
+    end
+
+    test "set the hero as alive", %{hero: hero} do
+      {:noreply, hero} = Hero.handle_info(:respawn, hero)
+      assert hero.alive?
+    end
+
+    test "assign new position", %{hero: hero} do
+      hero = Map.put(hero, :position, {1000, 1000})
+
+      {:noreply, hero} = Hero.handle_info(:respawn, hero)
+      {x, y} = hero.position
+      assert x < 10
+      assert y < 10
+    end
+
+    test "puts the hero back in alive registry", %{hero: hero} do
+      {:noreply, hero} = Hero.handle_info(:respawn, hero)
+      [{_pid, hero_in_registry}] = Registry.lookup(hero.state_registry, :alive)
+      assert hero == hero_in_registry
+    end
+  end
+
   defp get_alive(opts) do
     Registry.lookup(opts[:state_registry], :alive)
   end
