@@ -17,6 +17,11 @@ defmodule Game.HeroTest do
       [{^pid, _hero}] = get_alive(opts)
     end
 
+    test "register in general heroes registry", %{opts: opts} do
+      {:ok, pid} = Hero.start_link(:john, opts)
+      [{^pid, _hero}] = get_all_heroes(opts)
+    end
+
     test "set position", %{opts: opts} do
       {:ok, pid} = Hero.start_link(:john, opts)
       hero = :sys.get_state(pid)
@@ -38,6 +43,12 @@ defmodule Game.HeroTest do
       [{pid, hero}] = get_alive(opts)
       assert pid == pid1
       assert hero.name == :john
+    end
+
+    test "don't remove from all heroes registry", %{opts: opts} do
+      {:ok, pid} = Hero.start_link(:john, opts)
+      GenServer.cast(pid, :die)
+      [{^pid, _}] = get_all_heroes(opts)
     end
 
     test "set hero state to dead", %{opts: opts} do
@@ -161,6 +172,10 @@ defmodule Game.HeroTest do
 
   defp get_alive(opts) do
     Registry.lookup(opts[:state_registry], :alive)
+  end
+
+  defp get_all_heroes(opts) do
+    Registry.lookup(opts[:state_registry], :heroes)
   end
 
   defp gen_server_deps(_ctx) do

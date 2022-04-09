@@ -21,6 +21,13 @@ defmodule GameTest do
       assert DynamicSupervisor.count_children(opts[:supervisor]) == %{active: 1, specs: 1, supervisors: 0, workers: 1}
     end
 
+    test "give a player a random name if empty given", %{opts: opts} do
+      {:ok, pid} = Game.connect_player("", opts)
+      hero = :sys.get_state(pid)
+      refute hero.name == ""
+      refute is_nil(hero.name)
+    end
+
     test "don't spawn a new player process when name is already used", %{opts: opts} do
       name = UUID.uuid1()
       Game.connect_player(name, opts)
