@@ -4,7 +4,6 @@ defmodule GameWebWeb.GameLive do
   def mount(params, %{}, socket) do
     name = params["name"]
     {:ok, pid} = Game.connect_player(name)
-    player = Game.player_info(pid)
     map = Game.get_map()
 
     Process.send_after(self(), :refresh, 500)

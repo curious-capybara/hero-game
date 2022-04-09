@@ -5,7 +5,6 @@ defmodule Game do
   @doc """
   Connect a player identified by a name to a game. If the name is already used, it connects
   to existing player.
-  TODO: If no name given, generate one randomly.
   """
   @spec connect_player(String.t()) :: {:ok, pid()}
   def connect_player(name, opts \\ []) do
